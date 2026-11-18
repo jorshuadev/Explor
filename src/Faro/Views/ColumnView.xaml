@@ -1,0 +1,56 @@
+<UserControl x:Class="Faro.Views.ColumnView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <Style x:Key="ColumnItem" TargetType="ListBoxItem">
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="Height" Value="24"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="Row" CornerRadius="5" Margin="5,0" Padding="4,0" Background="Transparent" Opacity="{Binding ItemOpacity}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="20"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="14"/>
+                                </Grid.ColumnDefinitions>
+                                <Image Source="{Binding Icon}" Width="16" Height="16" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                <TextBlock x:Name="Txt" Grid.Column="1" Text="{Binding DisplayName}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Margin="3,0,0,0" Foreground="{DynamicResource Fg.Primary}"/>
+                                <TextBox x:Name="RenameBox" Grid.Column="1" Loaded="RenameBox_Loaded" Style="{StaticResource MacTextBox}" Padding="2,0" Height="20"
+                                         Visibility="{Binding IsEditing, Converter={StaticResource BoolToVis}}"/>
+                                <ItemsControl Grid.Column="2" ItemsSource="{Binding TagBrushes}" VerticalAlignment="Center" Margin="3,0,0,0">
+                                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate><DataTemplate><Ellipse Width="8" Height="8" Fill="{Binding}" Margin="-2,0,0,0" Stroke="White" StrokeThickness="1"/></DataTemplate></ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <TextBlock x:Name="Arrow" Grid.Column="3" Text="&#xE76C;" FontFamily="{StaticResource SymbolFont}" FontSize="9" VerticalAlignment="Center"
+                                           HorizontalAlignment="Right" Foreground="{DynamicResource Fg.Secondary}" Visibility="{Binding IsNavigable, Converter={StaticResource BoolToVis}}"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Row" Property="Background" Value="{DynamicResource Bg.SelectedInactive}"/>
+                            </Trigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsSelected" Value="True"/>
+                                    <Condition Property="Selector.IsSelectionActive" Value="True"/>
+                                </MultiTrigger.Conditions>
+                                <Setter TargetName="Row" Property="Background" Value="{DynamicResource Bg.Selected}"/>
+                                <Setter TargetName="Txt" Property="Foreground" Value="{DynamicResource Fg.OnSelected}"/>
+                                <Setter TargetName="Arrow" Property="Foreground" Value="{DynamicResource Fg.OnSelected}"/>
+                            </MultiTrigger>
+                            <DataTrigger Binding="{Binding IsDropTarget}" Value="True">
+                                <Setter TargetName="Row" Property="Background" Value="{DynamicResource Bg.DropTarget}"/>
+                            </DataTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+    <ScrollViewer x:Name="Scroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" Focusable="False">
+        <StackPanel x:Name="Columns" Orientation="Horizontal"/>
+    </ScrollViewer>
+</UserControl>

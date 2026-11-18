@@ -1,0 +1,45 @@
+<Window x:Class="Faro.Windows.ProgressWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Copiar" Width="470" SizeToContent="Height" MinHeight="90" MaxHeight="520"
+        ResizeMode="CanMinimize" WindowStartupLocation="CenterScreen"
+        FontFamily="{StaticResource UiFont}" FontSize="13"
+        Background="{DynamicResource Bg.Dialog}" ShowInTaskbar="True">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <ItemsControl ItemsSource="{Binding Jobs}" Margin="0,4">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Grid Margin="16,12,12,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="44"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Image Source="{Binding Icon}" Width="36" Height="36" VerticalAlignment="Top" Margin="0,2,0,0"/>
+                        <StackPanel Grid.Column="1" Margin="4,0,8,0">
+                            <TextBlock Text="{Binding Title}" Foreground="{DynamicResource Fg.Primary}" TextTrimming="CharacterEllipsis" FontSize="12.5"/>
+                            <ProgressBar Style="{StaticResource MacProgress}" Value="{Binding Percent, Mode=OneWay}" IsIndeterminate="{Binding IsIndeterminate, Mode=OneWay}" Margin="0,6,0,5" Maximum="100"/>
+                            <TextBlock x:Name="detail" Text="{Binding Detail}" Foreground="{DynamicResource Fg.Secondary}" FontSize="11" TextWrapping="Wrap"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                            <Button Style="{StaticResource ToolButton}" Click="Pause_Click" ToolTip="Pausar / reanudar" MinWidth="26" Height="26">
+                                <TextBlock Text="{Binding PauseGlyph}" Style="{StaticResource Glyph}" FontSize="12"/>
+                            </Button>
+                            <Button Style="{StaticResource ToolButton}" Click="Cancel_Click" ToolTip="Detener" MinWidth="26" Height="26">
+                                <Grid>
+                                    <Ellipse Width="16" Height="16" Fill="{DynamicResource Fg.Tertiary}"/>
+                                    <TextBlock Text="&#xE711;" Style="{StaticResource Glyph}" FontSize="8" Foreground="{DynamicResource Bg.Window}"/>
+                                </Grid>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                    <DataTemplate.Triggers>
+                        <DataTrigger Binding="{Binding IsWaiting}" Value="True">
+                            <Setter TargetName="detail" Property="Foreground" Value="#FF9500"/>
+                        </DataTrigger>
+                    </DataTemplate.Triggers>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </ScrollViewer>
+</Window>

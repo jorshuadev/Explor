@@ -1,0 +1,39 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <SolidColorBrush x:Key="Bg.Window" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="Bg.Sidebar" Color="#EDEBEE"/>
+    <SolidColorBrush x:Key="Bg.Toolbar" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="Bg.Bar" Color="#F7F7F7"/>
+    <SolidColorBrush x:Key="Bg.Hover" Color="#0F000000"/>
+    <SolidColorBrush x:Key="Bg.Pressed" Color="#1C000000"/>
+    <SolidColorBrush x:Key="Bg.Selected" Color="#0063E1"/>
+    <SolidColorBrush x:Key="Bg.SelectedInactive" Color="#DCDCDC"/>
+    <SolidColorBrush x:Key="Bg.SidebarSelected" Color="#1A000000"/>
+    <SolidColorBrush x:Key="Bg.RowAlt" Color="#F4F5F5"/>
+    <SolidColorBrush x:Key="Bg.Popup" Color="#F6F6F6"/>
+    <SolidColorBrush x:Key="Bg.Field" Color="#0D000000"/>
+    <SolidColorBrush x:Key="Bg.FieldFocus" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="Bg.Control" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="Bg.Segment" Color="#0F000000"/>
+    <SolidColorBrush x:Key="Bg.SegmentOn" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="Bg.Tab" Color="#E3E3E3"/>
+    <SolidColorBrush x:Key="Bg.TabActive" Color="#F6F6F6"/>
+    <SolidColorBrush x:Key="Bg.Dialog" Color="#ECECEC"/>
+    <SolidColorBrush x:Key="Bg.IconSelected" Color="#1F000000"/>
+    <SolidColorBrush x:Key="Bg.Marquee" Color="#330063E1"/>
+    <SolidColorBrush x:Key="Bg.DropTarget" Color="#330A84FF"/>
+    <SolidColorBrush x:Key="Bg.Progress" Color="#E2E2E2"/>
+    <SolidColorBrush x:Key="Fg.Primary" Color="#1D1D1F"/>
+    <SolidColorBrush x:Key="Fg.Secondary" Color="#86868B"/>
+    <SolidColorBrush x:Key="Fg.Tertiary" Color="#B0B0B5"/>
+    <SolidColorBrush x:Key="Fg.OnSelected" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="Fg.Accent" Color="#007AFF"/>
+    <SolidColorBrush x:Key="Fg.SidebarIcon" Color="#007AFF"/>
+    <SolidColorBrush x:Key="Fg.Toolbar" Color="#5E5E63"/>
+    <SolidColorBrush x:Key="Line.Separator" Color="#E3E3E3"/>
+    <SolidColorBrush x:Key="Line.Strong" Color="#C9C9CC"/>
+    <SolidColorBrush x:Key="Line.Popup" Color="#26000000"/>
+    <SolidColorBrush x:Key="Accent" Color="#007AFF"/>
+    <SolidColorBrush x:Key="Accent.Pressed" Color="#0062CC"/>
+    <Color x:Key="Shadow">#40000000</Color>
+</ResourceDictionary>

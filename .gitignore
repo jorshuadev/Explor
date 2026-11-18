@@ -1,0 +1,40 @@
+# Compilación .NET
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa]rm64/
+publish/
+dist/
+artifacts/
+*.nupkg
+*.snupkg
+
+# Visual Studio / Rider / VS Code
+.vs/
+.idea/
+.vscode/
+*.user
+*.suo
+*.userprefs
+*.rsuser
+*.DotSettings.user
+
+# Resultados de pruebas y registros
+TestResults/
+*.log
+
+# Binarios e instaladores (se publican como Release, no en el repositorio)
+*.exe
+*.dll
+*.pdb
+*.msi
+*.zip
+*.7z
+
+# Sistema
+Thumbs.db
+Desktop.ini
+.DS_Store
