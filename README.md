@@ -9,7 +9,9 @@ Explorador de archivos para Windows con una interfaz limpia y fluida, centrado e
 - **Cuatro vistas**: iconos, lista (con carpetas que se despliegan en el sitio), columnas con panel de vista previa y galería.
 - **Pestañas y sesión**: abre varias carpetas en pestañas; al volver a abrir la aplicación se recuperan las pestañas, las vistas y la ventana.
 - **Barra lateral**: favoritos que se reordenan arrastrando, discos con su espacio libre, Papelera, red y etiquetas de color.
-- **Vista rápida (Espacio)**: imágenes, PDF, texto y código (con edición), Markdown, audio y vídeo con reproductor propio y atajos de teclado.
+- **Vista rápida (Espacio)**: imágenes, PDF, texto y código (con edición), Markdown, el contenido de los comprimidos, audio y vídeo con reproductor propio (los controles se ocultan solos) y atajos de teclado.
+- **Abrir con**: lista las aplicaciones que Windows recomienda para cada tipo de archivo y, para texto y código, los editores instalados.
+- **Comprimidos**: comprime en ZIP y descomprime ZIP; con [7-Zip](https://www.7-zip.org/) instalado, también 7z, RAR, tar.gz y otros.
 - **Motor de copia propio**: copia en paralelo los archivos pequeños y por bloques los grandes; si un disco o la red se desconectan, espera y reanuda desde el último bloque confirmado; tras un cierre inesperado ofrece continuar la operación. Al mover entre discos, los originales se borran solo cuando cada copia está confirmada.
 - **Deshacer (Ctrl+Z)** para renombrar, mover, copiar, duplicar, crear carpetas y enviar a la Papelera.
 - **Búsqueda**: usa [Everything](https://www.voidtools.com/) si está instalado, después el índice de Windows y, si no hay ninguno, un escaneo paralelo propio. Admite filtros como `tipo:imagen`, `ext:psd,ai` o `*.mp4`.

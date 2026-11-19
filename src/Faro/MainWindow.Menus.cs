@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
 using System.Windows.Media;
@@ -98,7 +98,7 @@ public partial class MainWindow
         {
             m.Items.Add(Item("Renombrar", BeginRename, "Intro", single));
             m.Items.Add(Item($"Comprimir {name}", Compress));
-            if (single && first.Extension == "zip") m.Items.Add(Item("Descomprimir aquí", () => Extract(first)));
+            if (single && !first.IsDirectory && Archives.CanOpen(first.Extension)) m.Items.Add(Item("Descomprimir aquí", () => Extract(first)));
             m.Items.Add(Item("Duplicar", Duplicate, "Ctrl+D"));
             m.Items.Add(Item("Crear alias", MakeAlias, "Ctrl+L"));
             if (single && first.IsShortcut) m.Items.Add(Item("Mostrar original", ShowOriginal, "Ctrl+R"));
@@ -146,10 +146,48 @@ public partial class MainWindow
         var mi = new MenuItem { Header = "Abrir con" };
         mi.Items.Add(Item("Aplicación predeterminada", () => ShellInterop.Open(item.Path, this)));
         mi.Items.Add(new Separator());
-        if (item.Kind.Category is KindCategory.Text or KindCategory.Code or KindCategory.Web or KindCategory.Subtitle || item.Kind.Category == KindCategory.Other)
-            mi.Items.Add(Item("Bloc de notas", () => System.Diagnostics.Process.Start("notepad.exe", $"\"{item.Path}\"")));
-        mi.Items.Add(Item("Otra aplicación…", () => ShellInterop.OpenWith(item.Path, this)));
+        // Las apps se buscan al desplegar el submenú (preguntar a Windows en cada clic derecho lo haría lento).
+        var loading = new MenuItem { Header = "Buscando aplicaciones…", IsEnabled = false };
+        mi.Items.Add(loading);
+        bool filled = false;
+        mi.SubmenuOpened += (_, e) =>
+        {
+            if (filled || !ReferenceEquals(e.OriginalSource, mi)) return;
+            filled = true;
+            mi.Items.Remove(loading);
+            foreach (var app in OpenWithAppsFor(item))
+            {
+                var a = app;
+                var entry = Item(a.Name, () => a.Open(item.Path));
+                try
+                {
+                    if (a.ExePath != null && File.Exists(a.ExePath) && ShellInterop.GetImage(a.ExePath, 16, ShellInterop.SIIGBF.IconOnly) is { } icon)
+                        entry.Icon = new Image { Source = icon, Width = 16, Height = 16 };
+                }
+                catch { }
+                mi.Items.Add(entry);
+            }
+            if (mi.Items.Count > 2) mi.Items.Add(new Separator());
+            mi.Items.Add(Item("Otra aplicación…", () => ShellInterop.OpenWith(item.Path, this)));
+        };
         return mi;
+    }
+
+    /// <summary>Apps para «Abrir con»: las que recomienda Windows y, en texto/código/web, los editores instalados y el Bloc de notas.</summary>
+    private static List<OpenWithApps.App> OpenWithAppsFor(FileItem item)
+    {
+        var apps = OpenWithApps.Recommended(item.Path);
+        if (item.Kind.Category is KindCategory.Text or KindCategory.Code or KindCategory.Web or KindCategory.Subtitle or KindCategory.Other)
+        {
+            bool Has(string exe, string name) => apps.Any(a => string.Equals(a.Name, name, StringComparison.OrdinalIgnoreCase)
+                || (a.ExePath != null && string.Equals(System.IO.Path.GetFileName(a.ExePath), System.IO.Path.GetFileName(exe), StringComparison.OrdinalIgnoreCase)));
+            foreach (var ed in OpenWithApps.Editors())
+                if (!Has(ed.ExePath, ed.Name)) apps.Add(ed);
+            var notepad = System.IO.Path.Combine(Environment.SystemDirectory, "notepad.exe");
+            if (!Has(notepad, "Bloc de notas"))
+                apps.Add(new OpenWithApps.App("Bloc de notas", notepad, p => System.Diagnostics.Process.Start("notepad.exe", $"\"{p}\"")));
+        }
+        return apps;
     }
 
     /// <summary>La fila de círculos de colores de Finder para poner/quitar etiquetas.</summary>

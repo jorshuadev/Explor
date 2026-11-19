@@ -533,16 +533,22 @@ public partial class MainWindow
     public void Extract(FileItem zipItem)
     {
         var dir = Path.GetDirectoryName(zipItem.Path)!;
-        var target = Path.Combine(dir, Path.GetFileNameWithoutExtension(zipItem.Name));
-        if (Directory.Exists(target) || File.Exists(target)) target = TransferJob.UniqueName(dir, Path.GetFileNameWithoutExtension(zipItem.Name), true, false);
+        var folder = Archives.FolderNameFor(zipItem.Name);
+        var target = Path.Combine(dir, folder);
+        if (Directory.Exists(target) || File.Exists(target)) target = TransferJob.UniqueName(dir, folder, true, false);
         Task.Run(() =>
         {
             try
             {
-                ZipFile.ExtractToDirectory(zipItem.Path, target);
-                Dispatcher.BeginInvoke(() => _ = SelectWhenAppears(target));
+                Archives.Extract(zipItem.Path, target);
+                Dispatcher.BeginInvoke(() => { UndoManager.RegisterCreated(target, "Deshacer descomprimir"); _ = SelectWhenAppears(target); });
             }
-            catch (Exception ex) { Dispatcher.BeginInvoke(() => MacDialog.Error(this, $"No se pudo descomprimir «{zipItem.Name}».", ex.Message)); }
+            catch (Exception ex)
+            {
+                // que no quede una carpeta vacía de un intento fallido
+                try { if (Directory.Exists(target) && !Directory.EnumerateFileSystemEntries(target).Any()) Directory.Delete(target); } catch { }
+                Dispatcher.BeginInvoke(() => MacDialog.Error(this, $"No se pudo descomprimir «{zipItem.Name}».", ex.Message));
+            }
         });
     }
 

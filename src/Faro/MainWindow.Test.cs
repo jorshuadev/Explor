@@ -189,6 +189,18 @@ public partial class MainWindow
                 case "full": ToggleFullScreen(); break;
                 case "fullon": if (!_fullScreen) ToggleFullScreen(); break;
                 case "fulloff": if (_fullScreen) ToggleFullScreen(); break;
+                case "openwith": // «openwith C:\x\pagina.html» → apps que saldrían en «Abrir con» (estado.log)
+                    File.AppendAllText(Path.Combine(Core.AppInfo.LocalDir, "logs", "estado.log"),
+                        $"{DateTime.Now:HH:mm:ss} openwith {Path.GetFileName(arg)}: {string.Join(" | ", OpenWithAppsFor(new FileItem(arg, Path.GetFileName(arg), false, 0, DateTime.MinValue, DateTime.MinValue, FileAttributes.Normal)).Select(a => a.Name))}{Environment.NewLine}");
+                    break;
+                case "openwithrun": // «openwithrun Visual Studio Code|C:\x\pagina.html» → lo abre con esa app
+                {
+                    var ow = arg.Split('|');
+                    OpenWithAppsFor(new FileItem(ow[1], Path.GetFileName(ow[1]), false, 0, DateTime.MinValue, DateTime.MinValue, FileAttributes.Normal))
+                        .FirstOrDefault(a => a.Name.Contains(ow[0], StringComparison.OrdinalIgnoreCase))?.Open(ow[1]);
+                    break;
+                }
+                case "extract": { var z = _tab.Items.FirstOrDefault(i => i.Name.Equals(arg, StringComparison.OrdinalIgnoreCase)); if (z != null) Extract(z); break; }
                 case "rename": BeginRename(); break;
                 case "newfolder": NewFolder(); break;
                 case "focusinfo": // ¿quién tiene el foco y qué se está renombrando? → estado.log

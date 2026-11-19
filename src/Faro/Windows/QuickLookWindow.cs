@@ -228,6 +228,14 @@ public sealed partial class QuickLookWindow : Window
             return;
         }
 
+        // 2b) comprimidos: la lista de lo que traen dentro
+        if (cat == KindCategory.Archive && Archives.CanOpen(ext))
+        {
+            var listing = await Task.Run(() => Archives.TryList(path, 400));
+            if (token != _token) return;
+            if (listing != null && listing.Total > 0) { _content.Child = ArchiveView(item, listing); return; }
+        }
+
         // 3) texto y código
         if (cat is KindCategory.Text or KindCategory.Code or KindCategory.Web or KindCategory.Subtitle || (cat == KindCategory.Other && item.Size < 2_000_000 && LooksText(path)))
         {
@@ -385,6 +393,50 @@ public sealed partial class QuickLookWindow : Window
             return FileKinds.LooksLikeText(b.AsSpan(0, n));
         }
         catch { return false; }
+    }
+
+    /// <summary>Contenido de un comprimido: resumen arriba y una fila por entrada (carpetas incluidas).</summary>
+    private FrameworkElement ArchiveView(FileItem item, Archives.Listing listing)
+    {
+        var root = new DockPanel { Margin = new Thickness(18, 4, 18, 12) };
+        var head = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 10) };
+        head.Children.Add(new Image { Source = item.Icon, Width = 40, Height = 40, Margin = new Thickness(0, 0, 12, 0) });
+        var summary = new TextBlock
+        {
+            Text = $"{Format.Items(listing.Total)} dentro, {Format.Size(listing.Bytes)} al descomprimir",
+            VerticalAlignment = VerticalAlignment.Center, FontSize = 13
+        };
+        summary.SetResourceReference(TextBlock.ForegroundProperty, "Fg.Secondary");
+        head.Children.Add(summary);
+        DockPanel.SetDock(head, Dock.Top);
+        root.Children.Add(head);
+
+        var rows = new StackPanel();
+        foreach (var e in listing.Entries)
+        {
+            var row = new Grid { Margin = new Thickness(0, 3, 0, 3) };
+            row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            var name = new TextBlock { Text = e.IsFolder ? e.Name + "\\" : e.Name, TextTrimming = TextTrimming.CharacterEllipsis, FontSize = 13 };
+            name.SetResourceReference(TextBlock.ForegroundProperty, e.IsFolder ? "Fg.Secondary" : "Fg.Primary");
+            row.Children.Add(name);
+            if (!e.IsFolder)
+            {
+                var size = new TextBlock { Text = Format.Size(e.Size), Margin = new Thickness(16, 0, 0, 0), FontSize = 12 };
+                size.SetResourceReference(TextBlock.ForegroundProperty, "Fg.Secondary");
+                Grid.SetColumn(size, 1);
+                row.Children.Add(size);
+            }
+            rows.Children.Add(row);
+        }
+        if (listing.Total > listing.Entries.Count)
+        {
+            var more = new TextBlock { Text = $"… y {Format.Items(listing.Total - listing.Entries.Count)} más", Margin = new Thickness(0, 8, 0, 0), FontSize = 12 };
+            more.SetResourceReference(TextBlock.ForegroundProperty, "Fg.Secondary");
+            rows.Children.Add(more);
+        }
+        root.Children.Add(new ScrollViewer { Content = rows, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled });
+        return root;
     }
 
     private FrameworkElement InfoCard(FileItem item, ImageSource icon, string note = null)

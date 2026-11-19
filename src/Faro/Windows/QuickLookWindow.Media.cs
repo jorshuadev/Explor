@@ -45,7 +45,7 @@ public sealed partial class QuickLookWindow
 
     private FrameworkElement MediaView(string path, bool audio, FileItem item)
     {
-        var grid = new Grid { Margin = new Thickness(10, 0, 10, 8) };
+        var grid = new Grid { Margin = new Thickness(10, 0, 10, 8), Background = Brushes.Transparent };
         grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
         grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         var media = _media = new MediaElement
@@ -100,9 +100,12 @@ public sealed partial class QuickLookWindow
         bool playing = true, fromTimer = false, dragging = false;
         TimeSpan Duration() => media.NaturalDuration.HasTimeSpan ? media.NaturalDuration.TimeSpan : TimeSpan.Zero;
         void UpdateTimes() { now.Text = Format.Duration(media.Position); total.Text = Format.Duration(Duration()); }
+        // en vídeo los controles flotan sobre la imagen y se esconden solos; «wake» los vuelve a mostrar
+        Action wake = () => { };
         void SetPlaying(bool p)
         {
             playing = p;
+            wake();
             if (p) media.Play(); else media.Pause();
             playGlyph.Text = p ? "" : "";
         }
@@ -117,7 +120,7 @@ public sealed partial class QuickLookWindow
             UpdateTimes();
             if (showOsd) Osd($"{Format.Duration(TimeSpan.FromSeconds(seconds))} / {Format.Duration(Duration())}");
         }
-        void SeekBy(double s) { SeekTo(media.Position.TotalSeconds + s); Osd((s > 0 ? "+" : "−") + $"{Math.Abs(s):0} s   ·   {Format.Duration(media.Position)}"); }
+        void SeekBy(double s) { wake(); SeekTo(media.Position.TotalSeconds + s); Osd((s > 0 ? "+" : "−") + $"{Math.Abs(s):0} s   ·   {Format.Duration(media.Position)}"); }
 
         play.Click += (_, _) => TogglePlay();
         var back = MediaTextBtn("−10", "Retroceder 10 s (J)", () => SeekBy(-10));
@@ -166,8 +169,58 @@ public sealed partial class QuickLookWindow
         var controls = new DockPanel { Margin = new Thickness(0, 6, 0, 0) };
         DockPanel.SetDock(left, Dock.Left); DockPanel.SetDock(right, Dock.Right);
         controls.Children.Add(left); controls.Children.Add(right); controls.Children.Add(progress);
-        Grid.SetRow(controls, 1);
-        grid.Children.Add(controls);
+        if (audio)
+        {
+            Grid.SetRow(controls, 1);
+            grid.Children.Add(controls);
+        }
+        else
+        {
+            // Vídeo: barra flotante sobre la imagen (siempre oscura, como en cualquier reproductor). Se esconde
+            // sola a los 2,5 s sin mover el ratón mientras reproduce; vuelve al moverlo, al pausar o al saltar.
+            controls.Margin = new Thickness(0);
+            var bar = new Border
+            {
+                Child = controls, Background = new SolidColorBrush(Color.FromArgb(0xD9, 0x1C, 0x1C, 0x1E)), CornerRadius = new CornerRadius(10),
+                Padding = new Thickness(6, 4, 6, 4), Margin = new Thickness(12, 0, 12, 12), VerticalAlignment = VerticalAlignment.Bottom
+            };
+            bar.Resources.MergedDictionaries.Add(new ResourceDictionary { Source = new Uri("/Themes/Dark.xaml", UriKind.Relative) });
+            grid.Children.Add(bar);
+
+            bool shown = true;
+            var lastMouse = new Point(-1, -1);
+            var hideTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2.5) };
+            hideTimer.Tick += (_, _) =>
+            {
+                hideTimer.Stop();
+                if (_media != media || !playing) return;
+                if (dragging || bar.IsMouseOver) { hideTimer.Start(); return; }
+                shown = false;
+                bar.IsHitTestVisible = false;
+                bar.BeginAnimation(OpacityProperty, new DoubleAnimation(0, TimeSpan.FromMilliseconds(350)));
+                stage.Cursor = Cursors.None;
+            };
+            wake = () =>
+            {
+                hideTimer.Stop();
+                if (!shown)
+                {
+                    shown = true;
+                    bar.IsHitTestVisible = true;
+                    bar.BeginAnimation(OpacityProperty, new DoubleAnimation(1, TimeSpan.FromMilliseconds(120)));
+                    stage.Cursor = null;
+                }
+                if (playing && _media == media) hideTimer.Start();
+            };
+            // WPF repite MouseMove cuando cambia lo que hay bajo el cursor aunque el ratón esté quieto: sólo cuenta si se movió
+            grid.MouseMove += (_, e) =>
+            {
+                var p = e.GetPosition(grid);
+                if (Math.Abs(p.X - lastMouse.X) + Math.Abs(p.Y - lastMouse.Y) < 3) return;
+                lastMouse = p;
+                wake();
+            };
+        }
 
         // ---- barra de progreso: clic o arrastre = saltar; al pasar el ratón, a qué minuto se iría ----
         progress.ValueChanged += (_, e) => { if (!fromTimer) { media.Position = TimeSpan.FromSeconds(e.NewValue); UpdateTimes(); } };
@@ -243,6 +296,7 @@ public sealed partial class QuickLookWindow
         };
 
         media.Play();
+        wake();
         return grid;
     }
 }
